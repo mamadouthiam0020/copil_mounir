@@ -153,6 +153,9 @@ Un employé ne voit que les clients et programmes liés à lui (propriétaire, m
 
 ## Déploiement
 
+- **Render Blueprint** : voir [`DEPLOYMENT.md`](./DEPLOYMENT.md) et le fichier [`render.yaml`](./render.yaml). Le blueprint crée un Web Service Docker avec health check sur `/api/health` et secrets saisis dans le dashboard Render.
+- **Docker / reverse proxy** : voir les instructions ci-dessous et `deploy/nginx.conf`.
+
 ```bash
 # Build de l'image (les secrets sont injectés à l'exécution, jamais dans l'image)
 docker build -t copil:latest .
@@ -204,6 +207,8 @@ server/
 .env-dev            configuration de développement (non versionnée)
 .env-prod           configuration de production (non versionnée)
 Dockerfile          image de production multi-étages
+render.yaml         blueprint Render (Web Service Docker)
+DEPLOYMENT.md       guide de déploiement via blueprint Render
 deploy/nginx.conf   reverse proxy HTTPS
 .github/workflows/ci.yml vérifications CI + SCA
 ```

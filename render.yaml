@@ -1,0 +1,37 @@
+services:
+  # L'API Express sert également le client React compilé depuis client/dist.
+  - type: web
+    name: copil-mounir
+    runtime: docker
+    region: frankfurt
+    plan: starter
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/health
+    autoDeploy: true
+    numInstances: 1
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: NODE_ENV
+        value: production
+      # PORT est fourni par Render : ne pas le définir ici.
+      - key: AUTO_SEED
+        value: false
+      # La rotation du refresh cookie est sécurisée derrière le proxy Render.
+      - key: TRUST_PROXY
+        value: "1"
+      # Valeurs secrètes saisies dans le dashboard lors de l'application du blueprint.
+      - key: MONGODB_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: AUDIT_SECRET
+        sync: false
+      # Facultatif : inutile si le front et l'API sont servis par la même URL.
+      - key: CORS_ORIGIN
+        sync: false
+      # Facultatifs : valeurs par défaut déjà sûres dans l'application.
+      - key: JWT_EXPIRES
+        value: 15m
+      - key: REFRESH_TOKEN_DAYS
+        value: "7"
