@@ -17,6 +17,13 @@ services:
       # PORT est fourni par Render : ne pas le définir ici.
       - key: AUTO_SEED
         value: false
+      # Bootstrap du Super Admin production (mot de passe saisi dans le dashboard).
+      - key: BOOTSTRAP_ADMIN_NAME
+        value: "MAMADOU THIAM"
+      - key: BOOTSTRAP_ADMIN_EMAIL
+        value: admin@copil.ma
+      - key: BOOTSTRAP_ADMIN_PASSWORD
+        sync: false
       # La rotation du refresh cookie est sécurisée derrière le proxy Render.
       - key: TRUST_PROXY
         value: "1"

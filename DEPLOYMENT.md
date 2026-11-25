@@ -61,41 +61,23 @@ Le service écoute sur le port fourni par Render (`PORT`) ; ne le fixez pas dans
 
 Les variables `sync: false` ne sont **jamais écrasées** par le fichier : elles restent dans le dashboard Render.
 
-## 4. Premier compte administrateur
+## 4. Super Admin par défaut en production
 
-`AUTO_SEED=false` et `seed:prod` ne créent aucun compte par défaut : il n’existe donc **aucun mot de passe connu** en production.
+Le blueprint prévoit un bootstrap contrôlé par variables d’environnement. Aucun mot de passe n’est stocké dans le dépôt.
 
-Créez le Super Admin directement dans MongoDB :
+| Variable | Valeur du blueprint | Remarque |
+| --- | --- | --- |
+| `BOOTSTRAP_ADMIN_NAME` | `MAMADOU THIAM` | Nom affiché du Super Admin |
+| `BOOTSTRAP_ADMIN_EMAIL` | `admin@copil.ma` | Modifiable dans Render si souhaité |
+| `BOOTSTRAP_ADMIN_PASSWORD` | `sync: false` | À saisir dans Render, 12 caractères minimum |
 
-1. Générez un hash bcrypt depuis une machine sûre, sans écrire le mot de passe dans l’historique :
+Au premier démarrage, le serveur crée le compte `SUPER_ADMIN` s’il n’existe pas déjà. Les redémarrages suivants ne l’écrasent **pas** : changer le mot de passe depuis **Paramètres → Compte** reste définitif.
 
-```bash
-node -e "console.log(require('bcryptjs').hashSync(process.env.ADMIN_PASSWORD, 12))"
-```
+Si vous préférez ne pas utiliser le bootstrap, laissez `BOOTSTRAP_ADMIN_PASSWORD` vide et créez le compte manuellement dans MongoDB avec un hash bcrypt (coût 12) et le rôle `SUPER_ADMIN`.
 
-2. Insérez l’utilisateur avec `mongosh` :
+Connectez-vous ensuite avec ce compte, puis créez les autres utilisateurs depuis **Équipe → Ajouter un collaborateur** : le formulaire permet de choisir le rôle (`SUPER_ADMIN`, `ADMIN`, `MANAGER`, `EMPLOYEE`) et le serveur applique les droits correspondants.
 
-```javascript
-use Copil_Mounir_Prod
-
-db.users.insertOne({
-  id: 'usr_admin_' + new Date().getTime().toString(36),
-  name: 'Administrateur',
-  email: 'admin@exemple.ma',
-  password_hash: '<HASH_BCRYPT_GENERE>',
-  role: 'SUPER_ADMIN',
-  job_title: 'Directeur général',
-  phone: null,
-  avatar_color: '#0B2A5B',
-  active: 1,
-  token_version: 0,
-  created_at: new Date().toISOString()
-})
-```
-
-3. Connectez-vous sur l’URL Render avec ce compte, puis changez le mot de passe depuis **Paramètres → Compte**.
-
-Les autres comptes se créent ensuite depuis **Équipe** (12 caractères minimum).
+> `BOOTSTRAP_ADMIN_PASSWORD` est une valeur secrète : ne la versionnez jamais. Si vous la modifiez dans Render après la création du compte, le mot de passe du compte existant ne changera pas.
 
 ## 5. Vérification post-déploiement
 
@@ -127,6 +109,7 @@ Réponse attendue : `{"ok":true,"service":"copil-api",...}`.
 | Build OK mais health check échoue | `PORT` forcé ou mauvais `dockerfilePath` | Laisser Render fournir `PORT` ; vérifier `./Dockerfile` |
 | `JWT_SECRET doit être défini` | Variable absent du dashboard | Ajouter la variable dans Render puis redéployer |
 | `AUDIT_SECRET doit être défini` | Variable laissée vide lors de l’application du blueprint | Ajouter `AUDIT_SECRET` dans **Environment** puis redéployer |
+| `BOOTSTRAP_ADMIN_PASSWORD doit contenir au moins 12 caractères` | Mot de passe bootstrap trop court | Renseigner une valeur d’au moins 12 caractères dans Render |
 | Erreur de connexion MongoDB | IP Atlas non autorisée ou URI sans nom de base | Autoriser les IP Render et vérifier l’URI |
 | 403 sur toutes les routes | `APP_ENV` absent et URL publique sur un domaine distinct | Définir `CORS_ORIGIN` avec l’URL exacte |
 | Sessions qui expirent immédiatement | Plusieurs instances avec des secrets différents | Garder `numInstances: 1` et les mêmes secrets |

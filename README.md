@@ -41,6 +41,7 @@ Variables reconnues dans les fichiers `.env` :
 | `MONGODB_URI` | URI de connexion MongoDB propre à chaque environnement (alias accepté : `MONGO_URI`) |
 | `MONGO_DB_NAME` | Nom de base explicite (facultatif, sinon déduit du chemin de l’URI) |
 | `AUTO_SEED` | `true` en dev/test : ajoute les comptes de démonstration manquants, puis crée le reste du jeu de données si aucun client n’existe ; `false` désactive l’initialisation. En production, l’initialisation automatique est désactivée |
+| `BOOTSTRAP_ADMIN_NAME`, `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | Bootstrap d’un Super Admin en production (mot de passe 12 caractères minimum, jamais versionné) |
 | `CORS_ORIGIN` | Origines autorisées séparées par des virgules (obligatoire si l’API et le client sont sur des domaines distincts) |
 | `TRUST_PROXY` | Nombre de proxys de confiance ou adresse CIDR (à définir derrière nginx/load balancer) |
 | `RATE_LIMIT_MAX`, `LOGIN_RATE_LIMIT_MAX` | Limites de requêtes et de tentatives de connexion |
@@ -113,7 +114,7 @@ npm run dev
 2. Connectez-vous avec `mounir@copil.ma` / `admin123`.
 3. Modifiez le mot de passe depuis **Paramètres → Compte**, puis ceux des autres comptes depuis **Équipe**.
 
-> Ces identifiants sont réservés à la démonstration **development/test**. La production n’est jamais initialisée automatiquement (`AUTO_SEED=false`) et `seed:prod` n’y crée aucun compte par défaut. Créez votre Super Admin directement dans MongoDB avec un mot de passe d’au moins 12 caractères.
+> Ces identifiants sont réservés à la démonstration **development/test**. La production n’est jamais initialisée avec ces comptes (`AUTO_SEED=false`) et `seed:prod` n’en crée aucun. Le Super Admin de production est créé au premier démarrage si `BOOTSTRAP_ADMIN_PASSWORD` est fourni (voir [`DEPLOYMENT.md`](./DEPLOYMENT.md)) ; sinon, créez-le directement dans MongoDB avec un mot de passe d’au moins 12 caractères.
 
 ## Modules
 

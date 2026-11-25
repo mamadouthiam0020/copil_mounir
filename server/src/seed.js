@@ -3,7 +3,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { APP_ENV } from './env.js';
 import { closeDb, collection, connect, ENV_LABEL, MONGO_DB_NAME } from './db.js';
-import { addDays, computeQuote, nowISO, todayISO, uid } from './utils.js';
+import { addDays, computeQuote, logAudit, nowISO, todayISO, uid } from './utils.js';
 
 /**
  * Données de démonstration et comptes par défaut
@@ -486,23 +486,73 @@ export async function seed({ reset = false, quiet = false } = {}) {
 }
 
 /**
+ * Bootstrap d'un Super Admin en production.
+ * Le mot de passe n'est jamais codé en dur : il est fourni par la variable
+ * BOOTSTRAP_ADMIN_PASSWORD (12 caractères minimum). Le compte n'est créé que
+ * s'il n'existe pas déjà, afin de ne jamais écraser un mot de passe modifié.
+ */
+async function bootstrapAdmin(now) {
+  const password = process.env.BOOTSTRAP_ADMIN_PASSWORD;
+  if (!password) return;
+
+  const email = String(process.env.BOOTSTRAP_ADMIN_EMAIL || 'admin@copil.ma').trim().toLowerCase();
+  const name = String(process.env.BOOTSTRAP_ADMIN_NAME || 'MAMADOU THIAM').trim();
+  const id = 'usr_bootstrap_admin';
+
+  if (password.length < 12) {
+    throw new Error('BOOTSTRAP_ADMIN_PASSWORD doit contenir au moins 12 caractères.');
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    throw new Error('BOOTSTRAP_ADMIN_EMAIL doit être une adresse e-mail valide.');
+  }
+  if (name.length < 2) {
+    throw new Error('BOOTSTRAP_ADMIN_NAME doit contenir au moins 2 caractères.');
+  }
+
+  const existing = await collection('users').findOne(
+    { $or: [{ id }, { email }] },
+    { projection: { _id: 1 } },
+  );
+  if (existing) return;
+
+  await collection('users').insertOne({
+    id,
+    name,
+    email,
+    password_hash: await bcrypt.hash(password, 12),
+    role: 'SUPER_ADMIN',
+    job_title: 'Directeur général',
+    phone: null,
+    avatar_color: '#0B2A5B',
+    active: 1,
+    token_version: 0,
+    created_at: now,
+  });
+  await logAudit(null, 'user.created', 'user', id, name, 'Super Admin créé au démarrage (bootstrap)');
+  console.log(`  Seed: Super Admin ${email} créé (bootstrap production).`);
+}
+
+/**
  * Initialisation au démarrage de l'API.
- * - AUTO_SEED=false désactive toute écriture.
- * - La configuration globale est créée si elle manque (routes devis).
- * - En production, aucun compte n'est créé automatiquement.
+ * - La configuration globale est toujours assurée (routes devis).
+ * - Le bootstrap Super Admin est indépendant de AUTO_SEED.
+ * - En production, aucun jeu de démonstration n'est créé.
  * - En dev/test, les comptes manquants sont toujours ajoutés ; le reste du jeu
  *   de démonstration n'est créé que si la base ne contient aucun client.
  */
 export async function prepareStartupData() {
-  const enabled = String(process.env.AUTO_SEED ?? 'true').trim().toLowerCase() === 'true';
-  if (!enabled) return;
-
   const now = nowISO();
+
   const existingSettings = await collection('settings').findOne({ id: 'global' }, { projection: { _id: 1 } });
   if (!existingSettings) {
     await collection('settings').insertOne(buildSettings(now));
     console.log('  Seed: configuration globale initialisée.');
   }
+
+  await bootstrapAdmin(now);
+
+  const enabled = String(process.env.AUTO_SEED ?? 'true').trim().toLowerCase() === 'true';
+  if (!enabled) return;
 
   if (APP_ENV === 'production') return;
 
