@@ -1,0 +1,21 @@
+# Dépendances et builds
+node_modules/
+client/dist/
+server/data/
+*.tsbuildinfo
+
+# Secrets et environnements locaux
+.env
+.env.*
+.env-*
+!.env.example
+
+# Système / IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Journaux
+*.log
+npm-debug.log*

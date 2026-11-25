@@ -1,0 +1,25 @@
+{
+  "name": "copil-activite",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Copil — application MERN de pilotage d'activité (MongoDB, Express, React, Node.js)",
+  "workspaces": [
+    "client",
+    "server"
+  ],
+  "scripts": {
+    "mongo": "npm run mongo -w server",
+    "dev": "concurrently -n API,WEB -c yellow,cyan \"npm run dev -w server\" \"npm run dev -w client\"",
+    "dev:local": "concurrently -n MONGO,API,WEB -c green,yellow,cyan \"npm run mongo -w server\" \"npm run dev -w server -- --local\" \"npm run dev -w client\"",
+    "build": "npm run build -w client",
+    "start": "npm run start -w server",
+    "start:dev": "npm run start:dev -w server",
+    "seed": "npm run seed -w server",
+    "seed:dev": "npm run seed:dev -w server",
+    "seed:prod": "npm run seed:prod -w server",
+    "typecheck": "npm run typecheck -w client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

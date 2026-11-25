@@ -1,0 +1,30 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "mongo": "node scripts/mongo-dev.js",
+    "dev": "node --watch src/index.js",
+    "start": "node src/index.js --prod",
+    "start:dev": "node src/index.js",
+    "seed": "node src/seed.js --reset",
+    "seed:dev": "node src/seed.js --reset",
+    "seed:prod": "node src/seed.js --reset --prod"
+  },
+  "dependencies": {
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.7.4",
+    "helmet": "^8.3.0",
+    "hpp": "^0.2.3",
+    "jsonwebtoken": "^9.0.2",
+    "mongodb": "^7.9.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "mongodb-memory-server": "^11.3.0"
+  }
+}
