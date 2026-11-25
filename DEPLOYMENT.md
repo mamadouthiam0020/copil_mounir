@@ -44,6 +44,8 @@ Atlas autorise par défaut certaines IP. Les adresses de sortie de Render peuven
 5. Attendez la fin du build. Render lance `docker build`, puis `npm start` (qui force `APP_ENV=production`).
 6. Le health check appelle `/api/health` : il doit répondre `200`.
 
+> **Important** : une variable `sync: false` laissée vide pendant l’application du blueprint n’est **pas créée**. Vérifiez dans l’onglet **Environment** du service que `MONGODB_URI`, `JWT_SECRET` **et** `AUDIT_SECRET` figurent bien avec une valeur. `AUDIT_SECRET` est obligatoire au démarrage, au même titre que `JWT_SECRET`.
+
 Le service écoute sur le port fourni par Render (`PORT`) ; ne le fixez pas dans le blueprint. Le plan `starter` est utilisé par défaut ; un plan `free` est possible pour un test mais le service se met en veille et le refresh cookie peut expirer pendant l’inactivité.
 
 ## 3. Variables du blueprint
@@ -124,6 +126,7 @@ Réponse attendue : `{"ok":true,"service":"copil-api",...}`.
 | --- | --- | --- |
 | Build OK mais health check échoue | `PORT` forcé ou mauvais `dockerfilePath` | Laisser Render fournir `PORT` ; vérifier `./Dockerfile` |
 | `JWT_SECRET doit être défini` | Variable absent du dashboard | Ajouter la variable dans Render puis redéployer |
+| `AUDIT_SECRET doit être défini` | Variable laissée vide lors de l’application du blueprint | Ajouter `AUDIT_SECRET` dans **Environment** puis redéployer |
 | Erreur de connexion MongoDB | IP Atlas non autorisée ou URI sans nom de base | Autoriser les IP Render et vérifier l’URI |
 | 403 sur toutes les routes | `APP_ENV` absent et URL publique sur un domaine distinct | Définir `CORS_ORIGIN` avec l’URL exacte |
 | Sessions qui expirent immédiatement | Plusieurs instances avec des secrets différents | Garder `numInstances: 1` et les mêmes secrets |
